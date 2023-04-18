@@ -1,36 +1,31 @@
-#!/bin/bash
+name: Convert Minecraft 3D item icons to 2D
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
 
-# Install Pillow
-pip install pillow
-
-# Check if the input and output directories exist, create them if they don't
-if [ ! -d "input" ]; then
-  echo "Error: input directory does not exist"
-  exit 1
-fi
-if [ ! -d "output" ]; then
-  mkdir output
-fi
-
-# Define the function to convert an image
-function convert_image {
-  # Get the input and output filenames
-  input_file="$1"
-  output_file="$2"
-  # Load the image and convert it to a 2D icon
-  python - <<END
-from PIL import Image
-
-input_image = Image.open("$input_file")
-output_image = input_image.crop((0, 0, 16, 16))
-output_image.save("$output_file")
-END
-}
-
-# Loop over all files in the input directory
-for input_file in input/*.png; do
-  # Get the filename without the extension
-  filename=$(basename "$input_file" .png)
-  # Convert the image and save it to the output directory
-  convert_image "$input_file" "output/$filename.png"
-done
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2.2.3
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            libtiff5-dev \
+            libjpeg-dev \
+            libopenjp2-7-dev \
+            libwebp-dev
+          pip install pillow
+      - name: Run conversion script
+        env:
+          RESOURCE_PACK_URL: ${{ github.event.issue.body }}
+        run: |
+          git clone https://github.com/John-Smith-Programs/Minecraft-Icon-Converter.git
+          cd Minecraft-Icon-Converter
+          ./convert_icons.sh "${RESOURCE_PACK_URL}"
