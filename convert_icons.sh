@@ -1,25 +1,28 @@
 #!/bin/bash
 
-# Install necessary dependencies
-sudo apt-get update
-sudo apt-get install -y imagemagick
+# get the download link from the issue body
+link=$(echo $1 | grep -o 'https://.*')
 
-# Download and extract the resource pack
-wget -O resources.zip $1
-unzip -o resources.zip -d resources
+# download and extract the resource pack
+wget -O pack.zip $link
+unzip pack.zip
+rm pack.zip
 
-# Loop through each item icon in the 3D assets directory
-for file in resources/assets/minecraft/textures/item/*.png; do
-  # Get the filename without extension
-  filename=$(basename -- "$file")
+# create output directory
+mkdir -p output
+
+# loop through all item icons
+for file in $(find . -name '*.png'); do
+  filename=$(basename $file)
+  extension="${filename##*.}"
   filename="${filename%.*}"
 
-  # Convert the 3D icon to a 2D icon using ImageMagick
-  convert "$file" -crop 64x64+0+96 "output/${filename}.png"
+  # convert to 2D
+  convert -flatten -resize 32x32 "$file" "output/$filename.png"
 done
 
-# Zip the output folder
-zip -r output.zip output
-
-# Clean up
-rm -rf resources.zip resources output
+# compress and upload result
+tar -czvf icons.tar.gz output
+rm -rf output
+mkdir output
+mv icons.tar.gz output/
