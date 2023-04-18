@@ -1,8 +1,8 @@
-name: Convert Minecraft 3D item icons to 2D
-on:
+name: Convert Minecraft 3D icons to 2D
+
+on: 
   issues:
     types: [opened]
-  workflow_dispatch:
 
 jobs:
   convert:
@@ -10,22 +10,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v3.11.0
-        with:
-          python-version: 3.8
+      
       - name: Install dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            libtiff5-dev \
-            libjpeg-dev \
-            libopenjp2-7-dev \
-            libwebp-dev
-          pip install pillow
-      - name: Run conversion script
-        env:
-          RESOURCE_PACK_URL: ${{ github.event.issue.body }}
-        run: |
-          git clone https://github.com/John-Smith-Programs/Minecraft-Icon-Converter.git
-          cd Minecraft-Icon-Converter
-          ./convert_icons.sh "${RESOURCE_PACK_URL}"
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+      
+      - name: Convert icons
+        run: bash convert_icons.sh ${{ github.event.issue.body }}
