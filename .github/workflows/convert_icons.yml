@@ -1,18 +1,26 @@
-name: Convert Minecraft 3D icons to 2D
+name: Convert Minecraft 3D item icons to 2D
 
-on: 
+on:
   issues:
     types: [opened]
 
 jobs:
-  convert:
+  convert_icons:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
-      
-      - name: Convert icons
-        run: bash convert_icons.sh ${{ github.event.issue.body }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install ImageMagick
+      run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+    - name: Run script
+      run: |
+        mkdir output
+        bash convert_icons.sh ${{ issue.body }}
+
+    - name: Upload output
+      uses: actions/upload-artifact@v2
+      with:
+        name: converted_icons
+        path: output.zip
